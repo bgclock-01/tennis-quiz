@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国語テニス用語クイズ</title>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #e8f5e9;
+      --correct: #4caf50;
+      --wrong: #f44336;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #333333;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .quiz-container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      max-width: 500px;
+      width: 100%;
+      padding: 24px;
+      overflow: hidden;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .title { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    .progress { font-size: 0.9rem; color: #666; }
+    
+    .progress-bar {
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .question-card { margin-bottom: 24px; }
+    .cn-word {
+      font-size: 2.2rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 12px 0 4px;
+      color: #1a1a1a;
+    }
+    .pinyin {
+      text-align: center;
+      color: #666;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+    .prompt { font-size: 0.95rem; text-align: center; color: #555; }
+    
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .btn-option {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .btn-option:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .btn-option.correct { background: #e8f5e9; border-color: var(--correct); color: var(--correct); }
+    .btn-option.wrong { background: #ffebee; border-color: var(--wrong); color: var(--wrong); }
+    
+    .result-screen { text-align: center; display: none; }
+    .score-title { font-size: 1.5rem; margin-bottom: 12px; }
+    .score-number { font-size: 3rem; font-weight: bold; color: var(--primary); margin-bottom: 16px; }
+    .btn-reset {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <!-- クイズ画面 -->
+  <div id="quiz-screen">
+    <div class="header">
+      <div class="title">🎾 中国語テニス用語クイズ</div>
+      <div class="progress" id="progress-text">第 1 / 10 問</div>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    
+    <div class="question-card">
+      <div class="prompt">この中国語の日本語の意味は？</div>
+      <div class="cn-word" id="cn-word">截击</div>
+      <div class="pinyin" id="pinyin">jiéjī</div>
+    </div>
+    
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="result-screen" class="result-screen">
+    <div class="score-title">クイズ完了！</div>
+    <div class="score-number" id="final-score">0 / 10</div>
+    <p id="feedback-msg">お疲れ様でした！</p>
+    <button class="btn-reset" onclick="restartQuiz()">もう一度挑戦する</button>
+  </div>
+</div>
+
+<script>
+  const quizData = [
+    { word: "截击", pinyin: "jiéjī", options: ["スマッシュ", "ボレー", "ロブ", "サーブ"], answer: "ボレー" },
+    { word: "发球", pinyin: "fāqiú", options: ["レシーブ", "サーブ", "ドロップショット", "パス"], answer: "サーブ" },
+    { word: "扣杀", pinyin: "kòushā", options: ["スマッシュ", "スライス", "ボレー", "パッシング"], answer: "スマッシュ" },
+    { word: "破发", pinyin: "pòfā", options: ["タイブレーク", "キープ", "ブレーク", "ダブルフォールト"], answer: "ブレーク" },
+    { word: "抢七", pinyin: "qiǎngqī", options: ["マッチポイント", "タイブレーク", "セットポイント", "デュース"], answer: "タイブレーク" },
+    { word: "正手", pinyin: "zhèngshǒu", options: ["バックハンド", "フォアハンド", "両手打ち", "オーバーヘッド"], answer: "フォアハンド" },
+    { word: "反手", pinyin: "fǎnshǒu", options: ["フォアハンド", "バックハンド", "ボレー", "スライス"], answer: "バックハンド" },
+    { word: "赛点", pinyin: "sàidiǎn", options: ["ブレークポイント", "ゲームカウント", "マッチポイント", "セットポイント"], answer: "マッチポイント" },
+    { word: "双误", pinyin: "shuāngwù", options: ["フットフォールト", "ダブルフォールト", "コードボール", "アウト"], answer: "ダブルフォールt" },
+    { word: "底线", pinyin: "dǐxiàn", options: ["サービスライン", "サイドライン", "ベースライン", "センターライン"], answer: "ベースライン" }
+  ];
+
+  let currentIndex = 0;
+  let score = 0;
+  let canAnswer = true;
+
+  function loadQuestion() {
+    canAnswer = true;
+    const current = quizData[currentIndex];
+    
+    document.getElementById("progress-text").textContent = `第 ${currentIndex + 1} / ${quizData.length} 問`;
+    document.getElementById("progress-fill").style.width = `${((currentIndex + 1) / quizData.length) * 100}%`;
+    
+    document.getElementById("cn-word").textContent = current.word;
+    document.getElementById("pinyin").textContent = current.pinyin;
+    
+    const optionsContainer = document.getElementById("options");
+    optionsContainer.innerHTML = "";
+    
+    current.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "btn-option";
+      btn.textContent = opt;
+      btn.onclick = () => selectOption(btn, opt, current.answer);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function selectOption(btn, selected, correct) {
+    if (!canAnswer) return;
+    canAnswer = false;
+    
+    const buttons = document.querySelectorAll(".btn-option");
+    
+    if (selected === correct) {
+      btn.classList.add("correct");
+      score++;
+    } else {
+      btn.classList.add("wrong");
+      buttons.forEach(b => {
+        if (b.textContent === correct) b.classList.add("correct");
+      });
+    }
+
+    setTimeout(() => {
+      currentIndex++;
+      if (currentIndex < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }, 1200);
+  }
+
+  function showResult() {
+    document.getElementById("quiz-screen").style.display = "none";
+    document.getElementById("result-screen").style.display = "block";
+    document.getElementById("final-score").textContent = `${score} / ${quizData.length}`;
+    
+    let msg = "";
+    if (score === 10) msg = "完璧です！テニス中国語マスター！🎾🎉";
+    else if (score >= 7) msg = "素晴らしい成績です！かなり理解できています。";
+    else msg = "いいチャレンジでした！復習して完璧を目指しましょう。";
+    
+    document.getElementById("feedback-msg").textContent = msg;
+  }
+
+  function restartQuiz() {
+    currentIndex = 0;
+    score = 0;
+    document.getElementById("result-screen").style.display = "none";
+    document.getElementById("quiz-screen").style.display = "block";
+    loadQuestion();
+  }
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
